@@ -1,60 +1,87 @@
-import { useEffect } from 'react';
-import { useState } from 'react';
-import fetchCurrency from 'services/fetchApi';
+import { Paper } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { fetchCurrency } from 'services/fetchApi';
 import { Form } from './Form/Form';
+import { Header } from './Header/Header';
 
 export const App = () => {
-  const [amount1, setAmount1] = useState(1);
-  const [amount2, setAmount2] = useState(1);
-  const [currency1, setCurrency1] = useState('USD');
-  const [currency2, setCurrency2] = useState('UAH');
-  const [results, setResults] = useState([]);
+  const [currencyOptions, setCurrencyOptions] = useState([]);
+  const [fromCurrency, setFromCurrency] = useState();
+  const [toCurrency, setToCurrency] = useState();
+  const [amount, setAmount] = useState(100);
+  const [amountInFromCurrency, setAmountInFromCurrency] = useState(true);
+  const [exchange, setExchnge] = useState();
+  const format = number => {
+    return number.toFixed(2);
+  };
+  let toAmount, fromAmount;
+  if (amountInFromCurrency) {
+    fromAmount = amount;
+    toAmount = format(amount * exchange);
+  } else {
+    toAmount = amount;
+    fromAmount = format(amount / exchange);
+  }
 
   useEffect(() => {
-    fetchCurrency().then(resp => setResults(resp.results));
+    fetchCurrency().then(resp => {
+      const currencyUSD = Object.keys(resp.rates)[1];
+      setCurrencyOptions([resp.base, ...Object.keys(resp.rates)]);
+      setFromCurrency(resp.base);
+      setToCurrency(currencyUSD);
+      setExchnge(resp.rates[currencyUSD]);
+    });
   }, []);
 
   useEffect(() => {
-    if (!results) {
+    if (fromCurrency !== null && toCurrency !== null) {
+      fetch(
+        `https://api.exchangerate.host/latest?base=${fromCurrency}&symbols=${toCurrency}`
+      )
+        .then(res => res.json())
+        .then(data => setExchnge(data.rates[toCurrency]));
     }
-  }, [results]);
+  }, [fromCurrency, toCurrency]);
 
-  function format(number) {
-    return Number(number.toFixed(2));
-  }
-
-  const handleAmount1Change = amount1 => {
-    setAmount1(amount1);
-    setAmount2(format((amount1 * results[currency2]) / results[currency1]));
+  const handleFromAmountChange = e => {
+    setAmount(e.target.value);
+    setAmountInFromCurrency(true);
   };
-  const handleCurrency1Change = currency1 => {
-    setAmount2(format((amount1 * results[currency2]) / results[currency1]));
-    setCurrency1(currency1);
-  };
-  const handleAmount2Change = amount2 => {
-    setAmount2(amount2);
-    setAmount1(format((amount2 * results[currency1]) / results[currency2]));
-  };
-  const handleCurrency2Change = currency2 => {
-    setAmount1(format((amount2 * results[currency1]) / results[currency2]));
-    setCurrency2(currency2);
+  const handleToAmountChange = e => {
+    setAmount(e.target.value);
+    setAmountInFromCurrency(false);
   };
   return (
     <div>
-      <Form
-        onAmountChange={handleAmount1Change}
-        onCurrencyChange={handleCurrency1Change}
-        currencies={Object.keys(results)}
-        amount={amount1}
-        currency={currency1}
-      />
-      <Form
-        onAmountChange={handleAmount2Change}
-        onCurrencyChange={handleCurrency2Change}
-        currencies={Object.keys(results)}
-        amount={amount2}
-        currency={currency2}
-      />
+      <Header />
+      <Paper
+        elevation={3}
+        sx={{
+          position: 'relative',
+          boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px',
+          borderRadius: '4px',
+          paddingTop: '40px',
+          paddingBottom: '40px',
+          margin: 'auto',
+          maxWidth: '300px',
+          padding: '15px',
+        }}
+      >
+        <Form
+          currencyOptions={currencyOptions}
+          selectedCurrency={fromCurrency}
+          onChangeCurrency={e => setFromCurrency(e.target.value)}
+          amount={fromAmount}
+          onChangeAmount={handleFromAmountChange}
+        />
+        <Form
+          currencyOptions={currencyOptions}
+          selectedCurrency={toCurrency}
+          onChangeCurrency={e => setToCurrency(e.target.value)}
+          amount={toAmount}
+          onChangeAmount={handleToAmountChange}
+        />
+      </Paper>
     </div>
   );
 };

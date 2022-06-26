@@ -1,35 +1,40 @@
-import PropTypes from 'prop-types';
-import { nanoid } from 'nanoid';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import { Select, Container } from './Form.styled';
 
 export const Form = ({
+  currencyOptions,
+  selectedCurrency,
+  onChangeCurrency,
   amount,
-  currency,
-  currencies,
-  onAmountChange,
-  onCurrencyChange,
+  onChangeAmount,
 }) => {
   return (
-    <div>
-      <input
-        type="text"
-        value={amount}
-        onChange={e => onAmountChange(e.target.value)}
-      />
-      <select value={currency} onChange={e => onCurrencyChange(e.target.value)}>
-        {currencies.map(currency => (
-          <option key={nanoid()} value={currency}>
-            {currency}
+    <Container>
+      <Box
+        component="form"
+        sx={{
+          '& > :not(style)': { m: 1, width: '25ch' },
+        }}
+        noValidate
+        autoComplete="off"
+      >
+        <TextField
+          id="outlined-basic"
+          label="Amount"
+          variant="outlined"
+          type="number"
+          value={amount}
+          onChange={onChangeAmount}
+        />
+      </Box>
+      <Select value={selectedCurrency} onChange={onChangeCurrency}>
+        {currencyOptions.map(option => (
+          <option key={option} value={option}>
+            {option}
           </option>
         ))}
-      </select>
-    </div>
+      </Select>
+    </Container>
   );
-};
-
-Form.propTypes = {
-  amount: PropTypes.number.isRequired,
-  currency: PropTypes.string.isRequired,
-  currencies: PropTypes.array,
-  onAmountChange: PropTypes.func,
-  onCurrencyChange: PropTypes.func,
 };

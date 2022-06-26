@@ -1,11 +1,23 @@
-const keyAPI = '75d859168a-5a0badcb13-re12cl';
-
-const fetchCurrency = async () => {
-  const data = await fetch(
-    `https://api.fastforex.io/fetch-multi?from=USD&to=EUR%2C%20USD%2C%20UAH&api_key=${keyAPI}`
+export const fetchCurrency = async () => {
+  const response = await fetch(
+    'https://api.exchangerate.host/latest?base=UAH&symbols=USD,EUR'
   );
-  const resp = data.json();
-  return resp;
+  const data = await response.json();
+  return data;
 };
 
-export default fetchCurrency;
+export const fetchUSDCurrency = async () => {
+  const response = await fetch(
+    'https://api.exchangerate.host/latest?base=USD&symbols=UAH&amount=1'
+  );
+  const data = await response.json();
+  return data;
+};
+
+export const fetchEURCurrency = async () => {
+  const response = await fetch(
+    'https://api.exchangerate.host/latest?base=EUR&symbols=UAH&amount=1'
+  );
+  const data = await response.json();
+  return data;
+};
