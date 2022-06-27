@@ -14,7 +14,6 @@ export const Header = () => {
     fetchEURCurrency().then(resp => setCurrency2(...Object.values(resp.rates)));
   }, []);
 
-  console.log(currency1);
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar>
